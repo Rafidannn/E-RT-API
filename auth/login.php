@@ -1,23 +1,20 @@
 <?php
-include "../config/database.php";
-include "../response.php";
+include '../config/database.php';
 
-$nik = $_POST['nik'] ?? '';
-$password = $_POST['password'] ?? '';
+$nik = $_POST['nik'];
+$password = $_POST['password'];
 
-$query = mysqli_query($conn,
-    "SELECT * FROM users WHERE nik='$nik' LIMIT 1"
-);
+$sql = "SELECT * FROM users WHERE nik = '$nik'";
+$result = $conn->query($sql);
 
-$user = mysqli_fetch_assoc($query);
-
-if (!$user) {
-    response(false, "NIK tidak ditemukan");
+if ($result->num_rows > 0) {
+    $user = $result->fetch_assoc();
+    if (password_verify($password, $user['password'])) {
+        echo json_encode(["status" => "success", "data" => $user]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Password salah"]);
+    }
+} else {
+    echo json_encode(["status" => "error", "message" => "NIK tidak terdaftar"]);
 }
-
-if (!password_verify($password, $user['password'])) {
-    response(false, "Password salah");
-}
-
-unset($user['password']);
-response(true, "Login berhasil", $user);
+?>

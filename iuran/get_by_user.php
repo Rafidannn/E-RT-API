@@ -1,16 +1,18 @@
 <?php
-include "../config/database.php";
-include "../response.php";
+include '../config/database.php';
+include '../response.php';
 
-$id_user = $_GET['id_user'];
+$json = file_get_contents('php://input');
+$data = json_decode($json, true);
+$id_keluarga = $data['id_keluarga'];
 
-$result = mysqli_query($conn,
-    "SELECT * FROM iuran WHERE id_user='$id_user'"
-);
+$sql = "SELECT * FROM iuran WHERE id_keluarga = '$id_keluarga' ORDER BY tahun DESC, bulan DESC";
+$result = $conn->query($sql);
 
-$data = [];
-while ($row = mysqli_fetch_assoc($result)) {
-    $data[] = $row;
+$iurans = [];
+while($row = $result->fetch_assoc()) {
+    $iurans[] = $row;
 }
 
-response(true, "Data iuran", $data);
+sendResponse("success", "Data iuran berhasil diambil", $iurans);
+?>
