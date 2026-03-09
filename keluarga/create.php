@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pengelolaan_sampah = $data['pengelolaan_sampah'] ?? 'diangkut';
         $memiliki_toga      = $data['memiliki_toga'] ?? 0;
         
-        // Query Insert ke tabel keluarga
-        $query = "INSERT INTO keluarga (
+            // Query Insert ke tabel keluarga
+            $query = "INSERT INTO keluarga (
                     no_kk, 
                     alamat_lengkap, 
                     rt_rw, 
