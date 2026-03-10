@@ -5,6 +5,7 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // Sesuaikan path ke database.php lu
+//ghatan ngacir
 include '../config/database.php'; 
 
 // Ambil input JSON dari Flutter
