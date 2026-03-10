@@ -28,4 +28,4 @@ if (isset($data['judul']) && isset($data['isi'])) {
     // Data yang dikirim Flutter tidak lengkap
     response(false, "Data tidak lengkap atau format salah");
 }
-?>\
+?>
