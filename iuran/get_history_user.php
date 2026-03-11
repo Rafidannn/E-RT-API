@@ -2,14 +2,11 @@
 header("Content-Type: application/json");
 include '../config/database.php';
 
-$json = file_get_contents('php://input');
-$data = json_decode($json, true);
+$data = json_decode(file_get_contents('php://input'), true);
+$id_keluarga = isset($data['id_keluarga']) ? $data['id_keluarga'] : '';
 
-// Pastikan mengambil id_keluarga dari Flutter
-$id_keluarga = isset($data['id_keluarga']) ? mysqli_real_escape_string($conn, $data['id_keluarga']) : '';
-
-if ($id_keluarga == "") {
-    echo json_encode(["status" => "error", "message" => "ID Keluarga tidak dikirim"]);
+if (empty($id_keluarga)) {
+    echo json_encode(["status" => "error", "message" => "ID Keluarga mana cuk?"]);
     exit;
 }
 
