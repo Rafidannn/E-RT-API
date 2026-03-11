@@ -1,70 +1,49 @@
 <?php
-// Masukkan file koneksi dan fungsi respon
-require_once '../config/database.php';
-require_once '../response.php';
-
-// Header agar bisa diakses oleh Flutter
+ob_start();
 header("Content-Type: application/json");
+require_once '../config/database.php';
 
-// Pastikan method adalah POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$data = json_decode(file_get_contents("php://input"), true);
+
+// Fungsi respon biar gak capek ngetik
+function respon($status, $pesan) {
+    ob_clean();
+    echo json_encode(["status" => $status, "message" => $pesan]);
+    exit;
+}
+
+// Validasi input: no_kk dan id_kepala_keluarga WAJIB ADA
+if (!empty($data['no_kk']) && !empty($data['id_kepala_keluarga'])) {
     
-    // Ambil data dari body request (JSON)
-    $data = json_decode(file_get_contents("php://input"), true);
+    $no_kk = $data['no_kk'];
+    $alamat = $data['alamat_lengkap'] ?? '';
+    $rt_rw = $data['rt_rw'] ?? '';
+    $ekonomi = !empty($data['status_ekonomi']) ? $data['status_ekonomi'] : 'pra-sejahtera';
+    $air = $data['sumber_air'] ?? '';
+    $jamban = (int)($data['memiliki_jamban'] ?? 0);
+    $sampah = !empty($data['pengelolaan_sampah']) ? $data['pengelolaan_sampah'] : 'diangkut';    $toga = (int)($data['memiliki_toga'] ?? 0);
+    $id_kepala = (int)$data['id_kepala_keluarga']; 
 
-    // Validasi input minimal (No KK dan Alamat wajib ada)
-    if (!empty($data['no_kk']) && !empty($data['alamat_lengkap'])) {
-        
-        $no_kk              = $data['no_kk'];
-        $alamat_lengkap     = $data['alamat_lengkap'];
-        $rt_rw              = $data['rt_rw'] ?? '';
-        $status_ekonomi     = $data['status_ekonomi'] ?? 'mampu';
-        $sumber_air         = $data['sumber_air'] ?? 'sumur';
-        $memiliki_jamban    = $data['memiliki_jamban'] ?? 1; // 1 = Ya, 0 = Tidak
-        $pengelolaan_sampah = $data['pengelolaan_sampah'] ?? 'diangkut';
-        $memiliki_toga      = $data['memiliki_toga'] ?? 0;
-        
-            // Query Insert ke tabel keluarga
-            $query = "INSERT INTO keluarga (
-                    no_kk, 
-                    alamat_lengkap, 
-                    rt_rw, 
-                    status_ekonomi, 
-                    sumber_air, 
-                    memiliki_jamban, 
-                    pengelolaan_sampah, 
-                    memiliki_toga
-                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        $stmt = $db->prepare($query);
-        
-        // Bind parameter (s = string, i = integer)
-        $stmt->bind_param("sssssisi", 
-            $no_kk, 
-            $alamat_lengkap, 
-            $rt_rw, 
-            $status_ekonomi, 
-            $sumber_air, 
-            $memiliki_jamban, 
-            $pengelolaan_sampah, 
-            $memiliki_toga
-        );
+    // 1. Masukin data ke tabel keluarga
+    $query = "INSERT INTO keluarga (no_kk, alamat_lengkap, rt_rw, status_ekonomi, sumber_air, memiliki_jamban, pengelolaan_sampah, memiliki_toga, id_kepala_keluarga) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("sssssissi", $no_kk, $alamat, $rt_rw, $ekonomi, $air, $jamban, $sampah, $toga, $id_kepala);
 
-        if ($stmt->execute()) {
-            // Menggunakan fungsi di response.php
-            echo sendResponse(201, "Data Keluarga berhasil ditambahkan", [
-                "id_keluarga" => $db->insert_id,
-                "no_kk" => $no_kk
-            ]);
-        } else {
-            echo sendResponse(500, "Gagal menyimpan data: " . $db->error);
-        }
+    if ($stmt->execute()) {
+        $new_id_keluarga = $conn->insert_id;
 
-        $stmt->close();
+        // 2. KRUSIAL: Update si warga tersebut supaya id_keluarga-nya nyambung ke KK baru ini
+        $query_update_warga = "UPDATE warga SET id_keluarga = ? WHERE id_warga = ?";
+        $stmt_warga = $conn->prepare($query_update_warga);
+        $stmt_warga->bind_param("ii", $new_id_keluarga, $id_kepala);
+        $stmt_warga->execute();
+
+        respon(true, "Keluarga Berhasil Ditambahkan!");
     } else {
-        echo sendResponse(400, "Data tidak lengkap. No KK dan Alamat wajib diisi.");
+        respon(false, "Gagal Insert Keluarga: " . $stmt->error);
     }
 } else {
-    echo sendResponse(405, "Method tidak diizinkan. Gunakan POST.");
+    respon(false, "Data No. KK dan Kepala Keluarga gak boleh kosong cok!");
 }
-?>

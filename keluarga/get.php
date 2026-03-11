@@ -2,20 +2,22 @@
 header("Content-Type: application/json");
 require_once '../config/database.php';
 
-// Ambil ID Keluarga dan Nama Kepala Keluarga (JOIN ke tabel warga)
-// Liat: k.id_kepala_keluarga dikawinin sama w.id_warga
+// Pake LEFT JOIN dan ambil semua kolom keluarga (k.*)
+// Tambahin IFNULL biar kalo gak ada kepalanya, muncul tulisan "Belum Set"
 $query = "SELECT 
-            k.id_keluarga, 
-            w.nama as nama_warga, 
-            k.no_kk 
+            k.*, 
+            IFNULL(w.nama, 'Belum Set') as nama_warga 
           FROM keluarga k
-          JOIN warga w ON k.id_kepala_keluarga = w.id_warga";
+          LEFT JOIN warga w ON k.id_kepala_keluarga = w.id_warga
+          ORDER BY k.id_keluarga DESC";
 
 $result = mysqli_query($conn, $query);
 
 if ($result) {
     $data = [];
     while ($row = mysqli_fetch_assoc($result)) {
+        // Pastiin tipe datanya bener buat Flutter
+        $row['id_keluarga'] = (int)$row['id_keluarga'];
         $data[] = $row;
     }
     echo json_encode([
