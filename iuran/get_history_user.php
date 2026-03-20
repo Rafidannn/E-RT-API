@@ -10,8 +10,21 @@ if (empty($id_keluarga)) {
     exit;
 }
 
-// Ambil data iuran berdasarkan ID Keluarga
-$sql = "SELECT * FROM iuran WHERE id_keluarga = '$id_keluarga' ORDER BY id_iuran DESC";
+// Ambil data iuran berdasarkan ID Keluarga (atau semua jika id = all), plus join nama kepala keluarga
+if ($id_keluarga === 'all') {
+    $sql = "SELECT i.*, w.nama as nama_kepala 
+            FROM iuran i 
+            LEFT JOIN keluarga k ON i.id_keluarga = k.id_keluarga 
+            LEFT JOIN warga w ON k.id_kepala_keluarga = w.id_warga 
+            ORDER BY i.id_iuran DESC";
+} else {
+    $sql = "SELECT i.*, w.nama as nama_kepala 
+            FROM iuran i 
+            LEFT JOIN keluarga k ON i.id_keluarga = k.id_keluarga 
+            LEFT JOIN warga w ON k.id_kepala_keluarga = w.id_warga 
+            WHERE i.id_keluarga = '$id_keluarga' 
+            ORDER BY i.id_iuran DESC";
+}
 $result = $conn->query($sql);
 
 $riwayat = [];

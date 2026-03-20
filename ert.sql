@@ -33,10 +33,15 @@ CREATE TABLE `iuran` (
   `id_iuran` int(11) NOT NULL,
   `id_keluarga` int(11) DEFAULT NULL,
   `id_user` int(11) NOT NULL,
+  `jenis_iuran` varchar(100) DEFAULT NULL,
   `bulan` varchar(20) NOT NULL,
   `tahun` year(4) DEFAULT NULL,
   `nominal` int(11) NOT NULL,
-  `status` enum('lunas','belum') DEFAULT 'belum',
+  `status` enum('lunas','belum','pending','ditolak') DEFAULT 'belum',
+  `metode_pembayaran` varchar(50) DEFAULT NULL,
+  `catatan` text DEFAULT NULL,
+  `bukti_transfer` varchar(255) DEFAULT NULL,
+  `transaction_id` varchar(50) DEFAULT NULL,
   `tanggal_bayar` date DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
