@@ -8,6 +8,7 @@ $query = "SELECT
             j.status_jentik, 
             j.tanggal, 
             k.no_kk,
+            k.alamat_lengkap,
             w.nama as nama_kepala_keluarga,
             u.nama as nama_petugas
           FROM jumantik j

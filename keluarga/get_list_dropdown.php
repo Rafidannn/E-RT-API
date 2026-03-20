@@ -20,7 +20,7 @@ if (!$conn) {
 // QUERY JOIN (Gue samain ama screenshot tabel warga lu tadi)
 // k.id_kepala_keluarga harus nyambung ke w.id_warga
 // Ganti w.nama_warga jadi w.nama (atau cek di phpMyAdmin lu kolomnya apa)
-$sql = "SELECT k.id_keluarga, w.nama as nama_warga, k.no_kk 
+$sql = "SELECT k.id_keluarga, w.nama as nama_warga, k.no_kk, k.alamat_lengkap 
         FROM keluarga k 
         JOIN warga w ON k.id_kepala_keluarga = w.id_warga";
 
