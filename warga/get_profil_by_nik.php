@@ -23,7 +23,7 @@ $result = mysqli_stmt_get_result($stmt);
 if ($row = mysqli_fetch_assoc($result)) {
     echo json_encode(["status" => "success", "data" => $row]);
 } else {
-    // Cek juga di tabel users jika tidak ada di warga (untuk akun admin/petugas)
+    // Fallback ke tabel users jika tidak ada di warga
     $query_user = "SELECT * FROM users WHERE nik = ?";
     $stmt_user = mysqli_prepare($conn, $query_user);
     mysqli_stmt_bind_param($stmt_user, "s", $nik);
