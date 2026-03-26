@@ -3,11 +3,26 @@ header("Content-Type: application/json");
 include '../config/database.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
-$id_keluarga = isset($data['id_keluarga']) ? $data['id_keluarga'] : '';
 
-if (empty($id_keluarga)) {
-    echo json_encode(["status" => "error", "message" => "ID Keluarga mana cuk?"]);
+$id_keluarga = isset($data['id_keluarga']) ? $data['id_keluarga'] : (isset($_POST['id_keluarga']) ? $_POST['id_keluarga'] : (isset($_GET['id_keluarga']) ? $_GET['id_keluarga'] : ''));
+$nik = isset($data['nik']) ? $data['nik'] : (isset($_POST['nik']) ? $_POST['nik'] : (isset($_GET['nik']) ? $_GET['nik'] : ''));
+
+if (empty($id_keluarga) && empty($nik)) {
+    echo json_encode(["status" => "error", "message" => "ERROR DARI PHP: NIK tidak diterima backend. Pastikan sudah relogin agar memory tersimpan dengan benar! NIK yang masuk: '$nik'"]);
     exit;
+}
+
+// Jika NIK dikirim, cari id_keluarga-nya dari tabel warga
+if (!empty($nik) && empty($id_keluarga)) {
+    $sql_warga = "SELECT id_keluarga FROM warga WHERE nik = '$nik' LIMIT 1";
+    $res_warga = $conn->query($sql_warga);
+    if ($res_warga && $res_warga->num_rows > 0) {
+        $row_warga = $res_warga->fetch_assoc();
+        $id_keluarga = $row_warga['id_keluarga'];
+    } else {
+        echo json_encode(["status" => "error", "message" => "Data warga tidak ditemukan"]);
+        exit;
+    }
 }
 
 // Ambil data iuran berdasarkan ID Keluarga (atau semua jika id = all), plus join nama kepala keluarga
