@@ -7,20 +7,20 @@ try {
     $nik = $_GET['nik'] ?? '';
     if(!$nik) throw new Exception("NIK is required");
     
-    $create_sql = "CREATE TABLE IF NOT EXISTS laporan (
-        id_laporan INT AUTO_INCREMENT PRIMARY KEY,
+    $create_sql = "CREATE TABLE IF NOT EXISTS surat_pengantar (
+        id_surat INT AUTO_INCREMENT PRIMARY KEY,
         nik VARCHAR(50) NOT NULL,
-        subjek VARCHAR(150),
-        kategori VARCHAR(50),
-        detail TEXT,
-        foto_bukti VARCHAR(255) DEFAULT NULL,
-        lokasi VARCHAR(255) DEFAULT NULL,
-        status ENUM('TERKIRIM', 'DIPROSES', 'SELESAI', 'DITOLAK') DEFAULT 'TERKIRIM',
-        tanggal_laporan DATETIME DEFAULT CURRENT_TIMESTAMP
+        jenis_surat VARCHAR(100),
+        keperluan TEXT,
+        file_lampiran VARCHAR(255) DEFAULT NULL,
+        metode_pengambilan ENUM('Fisik', 'Digital') DEFAULT 'Fisik',
+        status ENUM('MENUNGGU', 'DISETUJUI', 'DITOLAK') DEFAULT 'MENUNGGU',
+        catatan_admin TEXT DEFAULT NULL,
+        tanggal_pengajuan DATETIME DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
     $conn->query($create_sql);
 
-    $sql = "SELECT * FROM laporan WHERE nik=? ORDER BY id_laporan DESC";
+    $sql = "SELECT * FROM surat_pengantar WHERE nik=? ORDER BY id_surat DESC";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $nik);
     $stmt->execute();
