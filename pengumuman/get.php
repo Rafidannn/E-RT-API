@@ -6,11 +6,11 @@ include '../response.php';
 header('Content-Type: application/json');
 
 $query = "
-SELECT p.id_pengumuman, p.judul, p.isi, p.tanggal,
+SELECT p.id_pengumuman, p.judul, p.isi, p.tanggal, p.waktu, p.kategori, p.lokasi, p.foto,
         u.nama AS pembuat
 FROM pengumuman p
 LEFT JOIN users u ON p.dibuat_oleh = u.id_user
-ORDER BY p.created_at DESC
+ORDER BY p.tanggal DESC, p.id_pengumuman DESC
 ";
 
 $result = mysqli_query($conn, $query);

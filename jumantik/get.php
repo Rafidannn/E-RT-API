@@ -2,11 +2,8 @@
 header("Content-Type: application/json");
 require_once '../config/database.php';
 
-// Query JOIN - Pastiin nama tabelnya 'users' bukan 'user'
 $query = "SELECT 
-            j.id_jumantik, 
-            j.status_jentik, 
-            j.tanggal, 
+            j.*, 
             k.no_kk,
             k.alamat_lengkap,
             w.nama as nama_kepala_keluarga,
@@ -15,7 +12,7 @@ $query = "SELECT
           JOIN keluarga k ON j.id_keluarga = k.id_keluarga
           JOIN warga w ON k.id_kepala_keluarga = w.id_warga
           JOIN users u ON j.petugas = u.id_user 
-          ORDER BY j.tanggal DESC";
+          ORDER BY j.tanggal DESC, j.id_jumantik DESC";
 
 $result = mysqli_query($conn, $query);
 
