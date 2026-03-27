@@ -2,6 +2,7 @@
 header("Content-Type: application/json");
 require_once '../config/database.php';
 
+// Query JOIN - Pastiin nama tabelnya 'users' bukan 'user'
 $query = "SELECT 
             j.*, 
             k.no_kk,

@@ -2,8 +2,8 @@
 header("Content-Type: application/json");
 include '../config/database.php'; 
 
-// Itung selisih tahun sekarang dengan tanggal_lahir di tabel lu
-$query = "SELECT COUNT(*) as total FROM warga WHERE TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >= 60";
+// Itung selisih tahun sekarang dengan tanggal_lahir atau dari status_kesehatan_khusus
+$query = "SELECT COUNT(*) as total FROM warga WHERE TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >= 60 OR LOWER(status_kesehatan_khusus) = 'lansia'";
 $result = mysqli_query($conn, $query); 
 
 if ($result) {

@@ -1,49 +1,52 @@
 <?php
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
 header("Content-Type: application/json");
-try {
-    include '../config/database.php';
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-    $create_sql = "CREATE TABLE IF NOT EXISTS laporan (
-        id_laporan INT AUTO_INCREMENT PRIMARY KEY,
-        nik VARCHAR(50) NOT NULL,
-        subjek VARCHAR(150),
-        kategori VARCHAR(50),
-        detail TEXT,
-        foto_bukti VARCHAR(255) DEFAULT NULL,
-        lokasi VARCHAR(255) DEFAULT NULL,
-        status ENUM('TERKIRIM', 'DIPROSES', 'SELESAI', 'DITOLAK') DEFAULT 'TERKIRIM',
-        tanggal_laporan DATETIME DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-    $conn->query($create_sql);
+include_once '../config/database.php';
 
-    $nik = $_POST['nik'] ?? '';
-    $subjek = $_POST['subjek'] ?? '';
-    $kategori = $_POST['kategori'] ?? '';
-    $detail = $_POST['detail'] ?? '';
-    $lokasi = $_POST['lokasi'] ?? '';
+$nik = $_POST['nik'] ?? '';
+$subjek = $_POST['subjek'] ?? '';
+$kategori = $_POST['kategori'] ?? '';
+$detail = $_POST['detail'] ?? '';
+$lokasi = $_POST['lokasi'] ?? '';
+$tanggal = date('Y-m-d H:i:s');
+$status = "Menunggu";
+
+// Handle image upload
+$foto_bukti = "Tidak ada foto";
+if (isset($_FILES['foto_bukti']) && $_FILES['foto_bukti']['error'] == UPLOAD_ERR_OK) {
+    $upload_dir = '../uploads/';
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+    }
     
-    if(!$nik || !$subjek) {
-        throw new Exception("Data form tidak lengkap");
+    $file_ext = strtolower(pathinfo($_FILES['foto_bukti']['name'], PATHINFO_EXTENSION));
+    $new_filename = 'laporan_' . time() . '_' . rand(1000, 9999) . '.' . $file_ext;
+    
+    if (move_uploaded_file($_FILES['foto_bukti']['tmp_name'], $upload_dir . $new_filename)) {
+        $foto_bukti = $new_filename;
     }
+}
 
-    $bukti = null;
-    if(isset($_FILES['foto_bukti']) && $_FILES['foto_bukti']['error'] == UPLOAD_ERR_OK) {
-        if(!file_exists('uploads')) mkdir('uploads', 0777, true);
-        $dest = 'uploads/' . time() . '_' . str_replace(" ", "_", $_FILES['foto_bukti']['name']);
-        if(move_uploaded_file($_FILES['foto_bukti']['tmp_name'], $dest)) {
-            $bukti = $dest;
-        }
+if (empty($nik) || empty($subjek)) {
+    echo json_encode(["status" => "error", "message" => "NIK dan Subjek tidak boleh kosong."]);
+    exit();
+}
+
+try {
+    $query = "INSERT INTO laporan (nik, subjek, kategori, detail, lokasi, foto_bukti, tanggal, status) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = mysqli_prepare($conn, $query);
+    mysqli_stmt_bind_param($stmt, "ssssssss", $nik, $subjek, $kategori, $detail, $lokasi, $foto_bukti, $tanggal, $status);
+    
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Laporan berhasil dikirim"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Gagal mengirim laporan: " . mysqli_error($conn)]);
     }
-
-    $stmt = $conn->prepare("INSERT INTO laporan (nik, subjek, kategori, detail, foto_bukti, lokasi, status) VALUES (?, ?, ?, ?, ?, ?, 'TERKIRIM')");
-    if(!$stmt) throw new Exception("DB PREPARE ERROR");
-    $stmt->bind_param("ssssss", $nik, $subjek, $kategori, $detail, $bukti, $lokasi);
-    if($stmt->execute()) echo json_encode(["status"=>"success"]);
-    else throw new Exception($stmt->error);
-
-} catch (\Throwable $e) {
-    echo json_encode(["status"=>"error", "message"=>$e->getMessage()]);
+} catch (Exception $e) {
+    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
 ?>

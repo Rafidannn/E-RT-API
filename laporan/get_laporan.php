@@ -1,25 +1,32 @@
 <?php
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-include_once '../config/database.php';
+try {
+    include '../config/database.php';
+    $nik = $_GET['nik'] ?? '';
+    if(!$nik) throw new Exception("NIK is required");
+    
+    $create_sql = "CREATE TABLE IF NOT EXISTS laporan (
+        id_laporan INT AUTO_INCREMENT PRIMARY KEY,
+        nik VARCHAR(50) NOT NULL,
+        subjek VARCHAR(150),
+        kategori VARCHAR(50),
+        detail TEXT,
+        foto_bukti VARCHAR(255) DEFAULT NULL,
+        lokasi VARCHAR(255) DEFAULT NULL,
+        status ENUM('TERKIRIM', 'DIPROSES', 'SELESAI', 'DITOLAK') DEFAULT 'TERKIRIM',
+        tanggal_laporan DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+    $conn->query($create_sql);
 
-$nik = $_GET['nik'] ?? '';
-
-if (!empty($nik)) {
-    $query = "SELECT * FROM laporan WHERE nik = ? ORDER BY id DESC";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "s", $nik);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-} else {
-    $query = "SELECT * FROM laporan ORDER BY id DESC";
-    $result = mysqli_query($conn, $query);
-}
-
-$laporan = array();
-if ($result) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        $laporan[] = $row;
+    $sql = "SELECT id_laporan, subjek, kategori, status, tanggal_laporan FROM laporan WHERE nik=? ORDER BY id_laporan DESC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $nik);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    
+    $data = [];
+    while($r = $res->fetch_assoc()){
+        $data[] = $r;
     }
     echo json_encode(["status" => "success", "data" => $laporan]);
 } else {

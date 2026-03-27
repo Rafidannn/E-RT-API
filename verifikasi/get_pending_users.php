@@ -4,7 +4,7 @@ include '../config/database.php';
 
 // AUTO MIGRATION: Jika kolom 'is_verified' belum ada, tambahkan ke tabel users
 $res = $conn->query("SHOW COLUMNS FROM `users` LIKE 'is_verified'");
-if ($res->num_rows == 0) {
+if ($res && $res->num_rows == 0) {
     $conn->query("ALTER TABLE `users` ADD COLUMN `is_verified` TINYINT(1) DEFAULT 0");
     // Asumsikan admin atau role selain pending lgsg aktif duluan dari data lama
     $conn->query("UPDATE `users` SET is_verified = 1");
