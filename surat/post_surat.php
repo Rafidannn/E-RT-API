@@ -29,10 +29,12 @@ try {
 
     $bukti = null;
     if(isset($_FILES['file_lampiran']) && $_FILES['file_lampiran']['error'] == UPLOAD_ERR_OK) {
-        if(!file_exists('uploads')) mkdir('uploads', 0777, true);
-        $dest = 'uploads/' . time() . '_' . str_replace(" ", "_", $_FILES['file_lampiran']['name']);
+        $uploadDir = '../uploads/';
+        if(!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+        $filename = 'surat_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $_FILES['file_lampiran']['name']);
+        $dest = $uploadDir . $filename;
         if(move_uploaded_file($_FILES['file_lampiran']['tmp_name'], $dest)) {
-            $bukti = $dest;
+            $bukti = $filename; // Simpan hanya nama file, bukan path
         }
     }
 
