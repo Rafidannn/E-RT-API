@@ -14,7 +14,6 @@ function respon($status, $pesan) {
 
 // Validasi input: no_kk dan id_kepala_keluarga WAJIB ADA
 if (!empty($data['no_kk']) && !empty($data['id_kepala_keluarga'])) {
-    
     $no_kk = $data['no_kk'];
     $alamat = $data['alamat_lengkap'] ?? '';
     $rt_rw = $data['rt_rw'] ?? '';
@@ -22,7 +21,7 @@ if (!empty($data['no_kk']) && !empty($data['id_kepala_keluarga'])) {
     $air = $data['sumber_air'] ?? '';
     $jamban = (int)($data['memiliki_jamban'] ?? 0);
     $sampah = !empty($data['pengelolaan_sampah']) ? $data['pengelolaan_sampah'] : 'diangkut';    $toga = (int)($data['memiliki_toga'] ?? 0);
-    $id_kepala = (int)$data['id_kepala_keluarga']; 
+    $id_kepala = (int)$data['id_kepala_keluarga'];
 
     // 1. Masukin data ke tabel keluarga
     $query = "INSERT INTO keluarga (no_kk, alamat_lengkap, rt_rw, status_ekonomi, sumber_air, memiliki_jamban, pengelolaan_sampah, memiliki_toga, id_kepala_keluarga) 

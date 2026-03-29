@@ -20,16 +20,22 @@ $res_total = $conn->query($sql_total);
 $row_total = $res_total->fetch_assoc();
 $total_masuk = $row_total['total'] ?? 0;
 
+// Hitung total keseluruhan masuk (ALL TIME)
+$sql_total_all = "SELECT SUM(nominal) as total FROM iuran WHERE status = 'lunas'";
+$res_total_all = $conn->query($sql_total_all);
+$row_total_all = $res_total_all->fetch_assoc();
+$total_keseluruhan = $row_total_all['total'] ?? 0;
+
 // 2. Ambil list iuran terbaru (JOIN ke tabel keluarga buat dapetin NO KK)
 $sql_recent = "SELECT i.*, k.no_kk 
                FROM iuran i 
-               JOIN warga k ON i.id_keluarga = k.nik 
+               LEFT JOIN keluarga k ON i.id_keluarga = k.id_keluarga OR i.id_keluarga = k.no_kk 
                ORDER BY i.tanggal_bayar DESC LIMIT 10";
-// NOTE: Pastikan k.id_keluarga atau k.nik sesuai dengan relasi di tabel iuran lu!
+// NOTE: Kita join ke 'keluarga' supaya bisa narik no_kk yang bener, fallback kalo id_keluarga nyimpen NIK/NoKK
 
 $res_recent = $conn->query($sql_recent);
 $recent_data = [];
-if ($res_recent) {
+if ($res_recent && $res_recent->num_rows > 0) {
     while($row = $res_recent->fetch_assoc()) {
         $recent_data[] = $row;
     }
@@ -39,6 +45,7 @@ echo json_encode([
     "status" => "success",
     "rekap" => [
         "total_bulan_ini" => number_format($total_masuk, 0, ',', '.'),
+        "total_keseluruhan" => number_format($total_keseluruhan, 0, ',', '.'),
         "bulan" => $bulan_ini,
         "tahun" => $tahun_ini
     ],

@@ -1,0 +1,1 @@
+UPDATE pengumuman SET judul='Tes', isi='tes', tanggal='2026-03-29', waktu='08.00', kategori='LINGKUNGAN', lokasi='Kantor' WHERE id_pengumuman='9'
