@@ -4,7 +4,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 header("Content-Type: application/json");
 
-include '../config/database.php';
+try {
+    include '../config/database.php';
 
 $id_keluarga = $_POST['id_keluarga'] ?? null;
 $id_user = $_POST['id_user'] ?? 1; 

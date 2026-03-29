@@ -31,7 +31,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // MODIFIKASI: Password langsung masuk tanpa di-hash (Plain Text)
     $final_password = $password;
 
-    // Cek apakah NIK sudah dipakai
+    // Lapis 1: Cek apakah NIK ini beneran ada di tabel warga (Apakah dia warga asli RT ini?)
+    $cek_warga = mysqli_query($conn, "SELECT nik FROM warga WHERE nik = '$nik'");
+    if (mysqli_num_rows($cek_warga) == 0) {
+        echo json_encode([
+            "status" => false,
+            "message" => "Pendaftaran Gagal: NIK tidak terdaftar sebagai warga RT ini! Silakan hubungi Admin."
+        ]);
+        exit;
+    }
+
+    // Lapis 2: Cek apakah NIK sudah dipakai bikin akun sebelumnya
     $check_nik = mysqli_query($conn, "SELECT nik FROM users WHERE nik = '$nik'");
     
     if (mysqli_num_rows($check_nik) > 0) {

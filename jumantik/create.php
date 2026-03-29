@@ -10,6 +10,9 @@ $data = json_decode($json, true);
 if ($data) {
     $_POST = $data;
 }
+
+// LOGGING UNTUK DEBUG
+file_put_contents(__DIR__ . "/debug_log.txt", "RAW JSON:\n" . $json . "\n\nPOST:\n" . print_r($_POST, true) . "\n\n", FILE_APPEND);
 // --------------------------------------------
 
 $id_keluarga   = $_POST['id_keluarga'] ?? null;
